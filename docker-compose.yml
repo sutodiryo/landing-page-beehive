@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: company_mongo
+    restart: unless-stopped
+    # Run as a single-node replica set so Prisma transactions work with MongoDB
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - 27017:27017
+
+  # One-time initializer to run rs.initiate() against the mongo service.
+  # This service will exit after successfully initiating the replica set.
+  mongo-init:
+    image: mongo:6
+    container_name: company_mongo_init
+    depends_on:
+      - mongo
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["until mongosh --host mongo --eval \"rs.initiate()\" >/dev/null 2>&1; do echo 'waiting for mongo to be ready...' ; sleep 1; done; echo 'replica set initiated'" ]
+    restart: "no"
+
+  backend:
+    build: ./backend
+    container_name: company_backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    depends_on:
+      - mongo
+    ports:
+      - 4000:4000
+
+  frontend:
+    build: ./frontend
+    container_name: company_frontend
+    restart: unless-stopped
+    env_file: ./frontend/.env
+    depends_on:
+      - backend
+    ports:
+      - 3000:3000
+
+volumes:
+  mongo-data:
