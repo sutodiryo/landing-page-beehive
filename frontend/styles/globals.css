@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  padding: 0;
+  @apply font-sans text-gray-900;
+}
+
+input,
+textarea {
+  @apply my-2 px-3 py-2 w-full max-w-md;
+}
+
+button {
+  @apply mt-2 px-4 py-2 rounded;
+}
