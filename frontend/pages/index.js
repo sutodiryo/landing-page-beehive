@@ -94,8 +94,11 @@ export default function Home({ articles = [], projects = [] }) {
   )
 }
 
+import getBackendUrl from '../utils/getBackendUrl';
+
 export async function getServerSideProps() {
-  const backend = process.env.NEXT_PUBLIC_BACKEND || 'http://localhost:4000';
+  // Resolve backend url at runtime (server vs client). Helper detects Docker runtime.
+  const backend = getBackendUrl();
   try {
     const [artRes, projRes] = await Promise.all([
       axios.get(`${backend}/api/articles`),
@@ -103,6 +106,7 @@ export async function getServerSideProps() {
     ]);
     return { props: { articles: artRes.data, projects: projRes.data } };
   } catch (err) {
+    console.error('getServerSideProps fetch error', err.message);
     return { props: { articles: [], projects: [] } };
   }
 }

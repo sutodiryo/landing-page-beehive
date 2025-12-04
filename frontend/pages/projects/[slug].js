@@ -46,8 +46,10 @@ export default function ProjectPage({ project }) {
   )
 }
 
+import getBackendUrl from '../../utils/getBackendUrl';
+
 export async function getServerSideProps(ctx) {
-  const backend = process.env.NEXT_PUBLIC_BACKEND || 'http://localhost:4000';
+  const backend = getBackendUrl();
   const { slug } = ctx.params;
   try {
     const res = await axios.get(`${backend}/api/projects/${slug}`);
