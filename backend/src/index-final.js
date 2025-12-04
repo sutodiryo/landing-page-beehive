@@ -15,7 +15,36 @@ const app = express();
 initializeEmailTransport();
 
 app.use(cors());
-app.use(express.json());
+// allow larger JSON bodies for base64 image uploads
+app.use(express.json({ limit: '10mb' }));
+const path = require('path');
+// Serve uploads with CORS headers so images can be fetched from the frontend
+const uploadsPath = path.join(__dirname, '..', 'uploads');
+app.use('/uploads', (req, res, next) => {
+  const allowOrigin = process.env.ALLOW_ORIGIN || '*';
+  res.setHeader('Access-Control-Allow-Origin', allowOrigin);
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+}, express.static(uploadsPath, {
+  setHeaders: (res) => {
+    const allowOrigin = process.env.ALLOW_ORIGIN || '*';
+    res.setHeader('Access-Control-Allow-Origin', allowOrigin);
+  }
+}));
+
+// ensure uploads dir exists and log its location
+const fs = require('fs');
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  try {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('Created uploads directory at', uploadsDir);
+  } catch (err) {
+    console.error('Failed to create uploads directory', err.message);
+  }
+} else {
+  console.log('Uploads directory exists at', uploadsDir);
+}
 
 app.use('/api/auth', authRoutes);
 app.use('/api/articles', articleRoutes);
