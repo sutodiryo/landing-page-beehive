@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import axios from 'axios';
 import Link from 'next/link';
 
@@ -14,7 +15,19 @@ export default function AdminProjects() {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
 
-  useEffect(() => { fetchProjects(); }, []);
+  const router = useRouter();
+
+  useEffect(() => {
+    // protect the admin page: redirect to login when token is missing
+    if (typeof window !== 'undefined') {
+      const t = localStorage.getItem('token');
+      if (!t) {
+        router.push('/admin/login');
+        return;
+      }
+    }
+    fetchProjects();
+  }, []);
 
   const backend = process.env.NEXT_PUBLIC_BACKEND || 'http://localhost:4000';
   const getToken = () => typeof window !== 'undefined' ? localStorage.getItem('token') : null;
