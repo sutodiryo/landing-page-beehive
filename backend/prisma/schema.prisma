@@ -19,6 +19,7 @@ model Article {
   id        String     @id @default(auto()) @map("_id") @db.ObjectId
   title     String
   slug      String     @unique
+  image     String?
   content   String?
   author    String?
   createdAt DateTime   @default(now())
@@ -29,6 +30,7 @@ model Project {
   id          String     @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   slug        String     @unique
+  image       String?
   description String?
   url         String?
   createdAt   DateTime   @default(now())

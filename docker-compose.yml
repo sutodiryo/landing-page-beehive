@@ -28,6 +28,10 @@ services:
     container_name: company_backend
     restart: unless-stopped
     env_file: ./backend/.env
+    environment:
+      - ALLOW_ORIGIN=http://localhost:3000
+    volumes:
+      - ./backend/uploads:/usr/src/app/uploads
     depends_on:
       - mongo
     ports:
