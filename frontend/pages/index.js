@@ -1,14 +1,23 @@
 import Link from 'next/link';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 export default function Home({ articles = [], projects = [] }) {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20 px-4">
+      {/* Hero Section (parallax) */}
+      <section
+        className="text-white py-28 px-4"
+        style={{
+          backgroundImage: `linear-gradient(rgba(30,64,175,0.55), rgba(29,78,216,0.55)), url('${process.env.NEXT_PUBLIC_HERO_IMAGE || 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1600&q=80'}')`,
+          backgroundAttachment: 'fixed',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">Company Profile</h1>
           <p className="text-xl md:text-2xl text-blue-100 mb-8">
@@ -28,6 +37,11 @@ export default function Home({ articles = [], projects = [] }) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {articles.map(a => (
                 <div key={a._id || a.id} className="block bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden">
+                  {a.image ? (
+                    <img src={a.image} alt={a.title} className="w-full h-90 object-cover" />
+                  ) : (
+                    <div className="w-full h-40 bg-gray-100" />
+                  )}
                   <div className="p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">{a.title}</h3>
                     <p className="text-gray-600 text-sm">{a.author ? `by ${a.author}` : 'Anonymous'}</p>
@@ -53,11 +67,15 @@ export default function Home({ articles = [], projects = [] }) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map(p => (
                 <div key={p._id || p.id} className="block bg-gray-50 rounded-lg shadow-md hover:shadow-lg transition overflow-hidden border border-gray-200">
+                  {p.image ? (
+                    <img src={p.image} alt={p.title} className="w-full h-90 object-cover" />
+                  ) : (
+                    <div className="w-full h-40 bg-gray-100" />
+                  )}
                   <div className="p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">{p.title}</h3>
                     <p className="text-gray-700 mb-4 line-clamp-2">{p.description || 'No description available'}</p>
                     <Link href={`/projects/${p.slug}`} className="mt-4 inline-block text-blue-600 font-semibold hover:underline">
-                      {/* Learn more → */}
                       Visit Project ↗
                     </Link>
                   </div>
@@ -71,11 +89,7 @@ export default function Home({ articles = [], projects = [] }) {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 py-8 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <p>&copy; 2025 Company Profile. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
