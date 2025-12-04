@@ -16,3 +16,13 @@ textarea {
 button {
   @apply mt-2 px-4 py-2 rounded;
 }
+
+/* Ensure the Next.js root is full height and a column so footer can stick to bottom */
+html, body, #__next {
+  height: 100%;
+}
+
+#__next {
+  display: flex;
+  flex-direction: column;
+}
