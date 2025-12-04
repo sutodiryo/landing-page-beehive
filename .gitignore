@@ -25,3 +25,6 @@ Thumbs.db
 
 # Backup and database
 backend/backup_db/backend
+
+# Uploaded files (do not commit)
+backend/uploads/
