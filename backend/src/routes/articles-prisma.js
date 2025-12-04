@@ -7,6 +7,7 @@ const auth = require('../middleware/auth');
 const multer = require('multer');
 
 const prisma = new PrismaClient();
+const { generateUniqueSlug } = require('../utils/slugify');
 
 const saveBase64Image = async (dataUrl) => {
   try {
@@ -104,7 +105,10 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
         imagePath = req.body.image; // assume already a URL/path
       }
     }
-    const article = await prisma.article.create({ data: { title, slug, content, author, image: imagePath } });
+    // generate slug if not provided
+    let finalSlug = slug;
+    if (!finalSlug) finalSlug = await generateUniqueSlug(prisma, 'article', title || slug || Date.now().toString());
+    const article = await prisma.article.create({ data: { title, slug: finalSlug, content, author, image: imagePath } });
     article.image = article.image ? makeFullImageUrl(req, article.image) : article.image;
     res.json(article);
   } catch (err) {
@@ -131,6 +135,10 @@ router.put('/:id', auth, upload.single('image'), async (req, res) => {
           console.log('Saved updated image to', saved);
         }
       }
+    }
+    // if title changed and slug not provided, regenerate slug
+    if (!update.slug && update.title) {
+      update.slug = await generateUniqueSlug(prisma, 'article', update.title);
     }
     const article = await prisma.article.update({ where: { id: req.params.id }, data: update });
     article.image = article.image ? makeFullImageUrl(req, article.image) : article.image;

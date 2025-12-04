@@ -6,6 +6,7 @@ export default function AdminArticles() {
   const [articles, setArticles] = useState([]);
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
+  const [slugTouched, setSlugTouched] = useState(false);
   const [content, setContent] = useState('');
   const [author, setAuthor] = useState('');
   const [error, setError] = useState('');
@@ -54,6 +55,7 @@ export default function AdminArticles() {
   const [createImageData, setCreateImageData] = useState('');
   const [createImagePreview, setCreateImagePreview] = useState('');
   const [editArticle, setEditArticle] = useState(null);
+  const [editSlugTouched, setEditSlugTouched] = useState(false);
   const [editImageData, setEditImageData] = useState('');
   const [editImagePreview, setEditImagePreview] = useState('');
 
@@ -114,6 +116,7 @@ export default function AdminArticles() {
 
   const openEditModal = (a) => {
     setEditArticle({ ...a });
+    setEditSlugTouched(false);
     const preview = a.image ? (a.image.startsWith('http') ? a.image : `${backend}${a.image}`) : '';
     setEditImagePreview(preview);
     setEditImageData(a.image || '');
@@ -196,7 +199,7 @@ export default function AdminArticles() {
 
         {/* Create button + modal */}
         <div className="mb-8 flex justify-end">
-          <button onClick={() => setShowCreateModal(true)} className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md">+ New Article</button>
+          <button onClick={() => { setSlugTouched(false); setTitle(''); setSlug(''); setContent(''); setAuthor(''); setCreateImageData(''); setCreateImagePreview(''); setShowCreateModal(true); }} className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md">+ New Article</button>
         </div>
 
         {showCreateModal && (
@@ -211,12 +214,21 @@ export default function AdminArticles() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                  <input placeholder="Article title" value={title} onChange={e => setTitle(e.target.value)} className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input placeholder="Article title" value={title} onChange={e => {
+                    const v = e.target.value;
+                    setTitle(v);
+                    if (!slugTouched) {
+                      // simple client-side slugify
+                      const s = v.toString().normalize('NFKD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim()
+                        .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+                      setSlug(s);
+                    }
+                  }} className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                  <input placeholder="article-slug" value={slug} onChange={e => setSlug(e.target.value)} className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input placeholder="article-slug" value={slug} onChange={e => { setSlug(e.target.value); setSlugTouched(true); }} className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
 
                 <div>
@@ -256,12 +268,21 @@ export default function AdminArticles() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                  <input placeholder="Article title" value={editArticle.title} onChange={e => setEditArticle({ ...editArticle, title: e.target.value })} className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input placeholder="Article title" value={editArticle.title} onChange={e => {
+                    const v = e.target.value;
+                    const updated = { ...editArticle, title: v };
+                    if (!editSlugTouched) {
+                      const s = v.toString().normalize('NFKD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim()
+                        .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+                      updated.slug = s;
+                    }
+                    setEditArticle(updated);
+                  }} className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                  <input placeholder="article-slug" value={editArticle.slug} onChange={e => setEditArticle({ ...editArticle, slug: e.target.value })} className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input placeholder="article-slug" value={editArticle.slug} onChange={e => { setEditArticle({ ...editArticle, slug: e.target.value }); setEditSlugTouched(true); }} className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
 
                 <div>
