@@ -6,6 +6,7 @@ export default function AdminProjects() {
   const [projects, setProjects] = useState([]);
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
+  const [slugTouched, setSlugTouched] = useState(false);
   const [description, setDescription] = useState('');
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
@@ -34,6 +35,7 @@ export default function AdminProjects() {
   const [createImageData, setCreateImageData] = useState('');
   const [createImagePreview, setCreateImagePreview] = useState('');
   const [editProject, setEditProject] = useState(null);
+  const [editSlugTouched, setEditSlugTouched] = useState(false);
   const [editImageData, setEditImageData] = useState('');
   const [editImagePreview, setEditImagePreview] = useState('');
 
@@ -92,6 +94,7 @@ export default function AdminProjects() {
 
   const openEditModal = (p) => {
     setEditProject({ ...p });
+    setEditSlugTouched(false);
     const preview = p.image ? (p.image.startsWith('http') ? p.image : `${backend}${p.image}`) : '';
     setEditImagePreview(preview);
     setEditImageData(p.image || '');
@@ -149,7 +152,7 @@ export default function AdminProjects() {
         {message && <div className={`mb-4 p-4 rounded ${messageType === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>{message}</div>}
 
         <div className="mb-8 flex justify-end">
-          <button onClick={() => setShowCreateModal(true)} className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md">+ New Project</button>
+          <button onClick={() => { setSlugTouched(false); setTitle(''); setSlug(''); setDescription(''); setUrl(''); setCreateImageData(''); setCreateImagePreview(''); setShowCreateModal(true); }} className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md">+ New Project</button>
         </div>
 
         {showCreateModal && (
@@ -163,11 +166,19 @@ export default function AdminProjects() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                  <input placeholder="Project title" value={title} onChange={e => setTitle(e.target.value)} className="block w-full px-4 py-2 border border-gray-300 rounded-md" />
+                  <input placeholder="Project title" value={title} onChange={e => {
+                    const v = e.target.value;
+                    setTitle(v);
+                    if (!slugTouched) {
+                      const s = v.toString().normalize('NFKD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim()
+                        .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+                      setSlug(s);
+                    }
+                  }} className="block w-full px-4 py-2 border border-gray-300 rounded-md" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                  <input placeholder="project-slug" value={slug} onChange={e => setSlug(e.target.value)} className="block w-full px-4 py-2 border border-gray-300 rounded-md" />
+                  <input placeholder="project-slug" value={slug} onChange={e => { setSlug(e.target.value); setSlugTouched(true); }} className="block w-full px-4 py-2 border border-gray-300 rounded-md" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">URL</label>
@@ -202,11 +213,20 @@ export default function AdminProjects() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                  <input placeholder="Project title" value={editProject.title} onChange={e => setEditProject({ ...editProject, title: e.target.value })} className="block w-full px-4 py-2 border border-gray-300 rounded-md" />
+                  <input placeholder="Project title" value={editProject.title} onChange={e => {
+                    const v = e.target.value;
+                    const updated = { ...editProject, title: v };
+                    if (!editSlugTouched) {
+                      const s = v.toString().normalize('NFKD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim()
+                        .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+                      updated.slug = s;
+                    }
+                    setEditProject(updated);
+                  }} className="block w-full px-4 py-2 border border-gray-300 rounded-md" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                  <input placeholder="project-slug" value={editProject.slug} onChange={e => setEditProject({ ...editProject, slug: e.target.value })} className="block w-full px-4 py-2 border border-gray-300 rounded-md" />
+                  <input placeholder="project-slug" value={editProject.slug} onChange={e => { setEditProject({ ...editProject, slug: e.target.value }); setEditSlugTouched(true); }} className="block w-full px-4 py-2 border border-gray-300 rounded-md" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">URL</label>
